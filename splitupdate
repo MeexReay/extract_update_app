@@ -24,8 +24,6 @@
 use strict;
 use warnings;
 
-my $CRC_CHECK= -e "crc" && -x _;
-
 # Turn on print flushing.
 $|++;
  
@@ -131,17 +129,15 @@ sub dump_file {
 		  print "\r";
 		  print "verifying checksum for $fileType ($fileSize)...";
 
-      $calculatedCRC=`./crc $BASEPATH$fileType.img` if $CRC_CHECK;
-      chomp($calculatedCRC) if $CRC_CHECK;
+      $calculatedCRC=`crc32 $BASEPATH$fileType.img`;
+      chomp($calculatedCRC);
 
 		  print "\r";
       printf "%*v2.2X", '', $fileSeq;
-      if($CRC_CHECK){
-			  if (!$calculatedCRC eq $sourceCRC)
-			  {
-				  print " - !!! CRC ERROR";
-			  }
-      }
+		  if (!$calculatedCRC eq $sourceCRC)
+		  {
+			  print " - !!! CRC ERROR";
+		  }
     }
     else {
       seek(INFILE, $dataLength, 1);
