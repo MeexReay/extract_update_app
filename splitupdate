@@ -52,6 +52,10 @@ my $fileLoc=0;
 my $BASEPATH = "output/";
 mkdir $BASEPATH;
 
+open(my $fh, ">${BASEPATH}flash.sh");
+print $fh "#!/bin/sh\n";
+close($fh);
+
 while (!eof(INFILE))
 {
 	$fileLoc=&find_next_file($fileLoc);
@@ -138,6 +142,11 @@ sub dump_file {
 		  {
 			  print " - !!! CRC ERROR";
 		  }
+
+			open(my $fh, ">>${BASEPATH}flash.sh");
+			my $lowerFileType = lc($fileType);
+			print $fh "fastboot flash $lowerFileType $fileType.img\n";
+			close($fh);
     }
     else {
       seek(INFILE, $dataLength, 1);
