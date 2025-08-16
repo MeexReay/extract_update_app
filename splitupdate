@@ -109,14 +109,23 @@ sub dump_file {
     read(INFILE, $buffer, 16);	# FileTime
     my ($fileTime) = unpack("Z16", $buffer);
     read(INFILE, $buffer, 16);	# FileType
-    my ($fileType) = unpack("Z16", $buffer);
+    my ($fileType) = lc(unpack("Z16", $buffer));
     read(INFILE, $buffer, 16);	# Blank1
-    read(INFILE, $buffer, 2);	 # HeaderChecksum
-    read(INFILE, $buffer, 2);	 # BlockSize
-    read(INFILE, $buffer, 2);	 # Blank2
 
-    # Grab the checksum of the file
-    read(INFILE, $buffer, $headerLength-98);
+    # open(CRCFILE, ">$BASEPATH${fileType}_crc.img") or die "Unable to create ${fileType}_crc.img: $!\n";
+    # binmode CRCFILE;
+    
+    read(INFILE, $buffer, 2);	 # HeaderChecksum
+    # print CRCFILE $buffer;
+    read(INFILE, $buffer, 2);	 # BlockSize
+    # print CRCFILE $buffer;
+    read(INFILE, $buffer, 2);	 # Blank2
+    # print CRCFILE $buffer;
+    read(INFILE, $buffer, $headerLength-98); # Grab the checksum of the file
+    # print CRCFILE $buffer;
+    
+    # close CRCFILE;
+    
     $sourceCRC=slimhexdump($buffer);
     
     my ($fileName) = "$fileType" . ".img";
@@ -133,8 +142,9 @@ sub dump_file {
 		  print "\r";
 		  print "verifying checksum for $fileType ($fileSize)...";
 
-      $calculatedCRC=`crc32 $BASEPATH$fileType.img`;
+      $calculatedCRC=`./crc32 $BASEPATH$fileType.img`;
       chomp($calculatedCRC);
+	    # $calculatedCRC=crc32($buffer);
 
 		  print "\r";
       printf "%*v2.2X", '', $fileSeq;
@@ -144,8 +154,7 @@ sub dump_file {
 		  }
 
 			open(my $fh, ">>${BASEPATH}flash.sh");
-			my $lowerFileType = lc($fileType);
-			print $fh "fastboot flash $lowerFileType $fileType.img\n";
+			print $fh "fastboot flash $fileType $fileType.img\n";
 			close($fh);
     }
     else {

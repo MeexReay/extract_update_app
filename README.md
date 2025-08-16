@@ -5,7 +5,7 @@ Improved tool for splitting UPDATE.APP for Huawei phones
 
 To extract execute:
 ```
-chmod +x splitupdate
+chmod +x splitupdate crc32
 ./splitupdate UPDATE.APP
 ```
 
