@@ -142,7 +142,7 @@ sub dump_file {
 		  print "\r";
 		  print "verifying checksum for $fileType ($fileSize)...";
 
-      $calculatedCRC=`./crc32 $BASEPATH$fileType.img`;
+      $calculatedCRC=`python -c "import binascii;f=open('$BASEPATH$fileName','rb');print(hex(binascii.crc32(f.read())));f.close()"`;
       chomp($calculatedCRC);
 	    # $calculatedCRC=crc32($buffer);
 
@@ -153,9 +153,19 @@ sub dump_file {
 			  print " - !!! CRC ERROR";
 		  }
 
-			open(my $fh, ">>${BASEPATH}flash.sh");
-			print $fh "fastboot flash $fileType $fileType.img\n";
-			close($fh);
+			my $is_in_list = 0;
+			foreach ("sha256rsa", "crc", "verlist", "curver", "package_type") {
+		    if ($_ eq $fileType) {
+	        $is_in_list = 1;
+	        last;
+		    }
+			}
+
+			if (!$is_in_list) {
+ 				open(my $fh, ">>${BASEPATH}flash.sh");
+				print $fh "fastboot flash $fileType $fileType.img\n";
+				close($fh);
+			}
     }
     else {
       seek(INFILE, $dataLength, 1);
