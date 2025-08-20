@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+
+for i in sys.argv[1:]:
+    image_file = open(i,"rb")
+    crc_file = open(i+"_crc.img","wb")
+
+    print("generating", i+"_crc.img" "...")
+
+    while buf := image_file.read(32768):
+        crc = subprocess.check_output(["./crc16"], input=buf)
+        crc = bytes.fromhex(crc.decode())
+        crc_file.write(crc)
+
+    crc_file.close()
+    image_file.close()

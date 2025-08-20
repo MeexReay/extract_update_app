@@ -9,3 +9,14 @@ To extract execute:
 ```
 
 The img files will be extracted in the output/ folder.
+
+To split crc.img for huawei_crc_check:
+
+```
+./splitcrc
+```
+
+To generate \<image_file\>_crc.img for huawei_crc_check:
+```
+./generatecrc <image_file> [image_file] ...
+```
