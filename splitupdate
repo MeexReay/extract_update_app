@@ -56,6 +56,9 @@ open(my $fh, ">${BASEPATH}flash.sh");
 print $fh "#!/bin/sh\n";
 close($fh);
 
+open(my $sf, ">${BASEPATH}struct");
+close($sf);
+
 while (!eof(INFILE))
 {
 	$fileLoc=&find_next_file($fileLoc);
@@ -166,6 +169,11 @@ sub dump_file {
 				print $fh "fastboot flash $fileType $fileType.img\n";
 				close($fh);
 			}
+			
+			open(my $sf, ">>${BASEPATH}struct");
+      printf $sf "%*v2.2X", '', $fileSeq;
+			print $sf " $fileType\n";
+			close($sf);
     }
     else {
       seek(INFILE, $dataLength, 1);

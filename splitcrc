@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+import binascii
+import os
+import math
+import subprocess
+
+print("crc16 is a command from rsbkb (rust blackbag), please install it!!!")
+
+OUTPUT_DIR = "output"
+
+struct_file = open(os.path.join(OUTPUT_DIR, "struct"))
+
+images = []
+
+while line := struct_file.readline():
+    (pos, name) = line.split()
+    pos = int(pos, 16)
+    
+    if name == "sha256rsa":
+        continue
+            
+    if name == "crc":
+        continue
+
+    # if name == "verlist":
+    #     continue
+
+    # if name == "curver":
+    #     continue
+
+    # if name == "package_type":
+    #     continue
+
+    images += [name]
+
+struct_file.close()
+
+source_crc_file = open(os.path.join(OUTPUT_DIR, "crc.img"), "rb")
+
+read_images = []
+
+while len(read_images) != len(images):
+    first_crc = source_crc_file.read(2)
+
+    image = None
+    
+    for name in images:
+        if name in read_images:
+            continue
+        path = os.path.join(OUTPUT_DIR, name + ".img")
+        file = open(path, "rb")
+        buf = file.read(32768)
+        file.close()
+        crc = subprocess.check_output(["crc16"], input=buf)
+        crc = bytes.fromhex(crc.decode())
+        if crc[0] == first_crc[1] and crc[1] == first_crc[0]:
+            image = name
+            break
+
+    if image == None:
+        print("fail while find image by crc")
+        exit()
+
+    read_images += [image]
+    
+    image_size = os.path.getsize(path)
+    crc_size = math.ceil(image_size / 32768) * 2
+
+    crc_path = os.path.join(OUTPUT_DIR, image + "_crc.img")
+
+    print("reading", image, "crc image", "crc_size:", crc_size, "image_size:", image_size)
+
+    crc_file = open(crc_path, "wb")
+    crc_file.write(first_crc)
+    crc_file.write(source_crc_file.read(crc_size-2))
+    crc_file.close()
+
+if end_data := source_crc_file.read():
+    print("WARNING:", len(end_data), "bytes of unknown data")
+    print("try change crc_size calculation or add more images to output/struct")
+
+source_crc_file.close()
+
+print("\ncd output")
+
+for name in images:
+    print("fastboot flash huawei_crc_check "+name+"_crc.img")
+    print("fastboot flash "+name+" "+name+".img")
+
+print("# rearrange output/struct images on huawei_crc_check errors")
