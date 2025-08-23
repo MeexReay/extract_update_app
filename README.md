@@ -16,7 +16,7 @@ To split crc.img for huawei_crc_check:
 ./splitcrc
 ```
 
-To generate \<image_file\>_crc.img for huawei_crc_check:
+To generate \<image_file\>_crc for huawei_crc_check:
 ```
-./generatecrc <image_file> [image_file] ...
+./generatecrc16 <image_file> [image_file] ...
 ```

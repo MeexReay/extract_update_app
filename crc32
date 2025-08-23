@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# rewrite this in python
+
+rsbkb crc32

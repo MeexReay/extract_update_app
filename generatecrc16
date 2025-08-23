@@ -3,10 +3,12 @@ import subprocess
 import sys
 
 for i in sys.argv[1:]:
+    name,ext = os.path.splitext(i)
+    
     image_file = open(i,"rb")
-    crc_file = open(i+"_crc.img","wb")
+    crc_file = open(name+"_crc"+ext,"wb")
 
-    print("generating", i+"_crc.img" "...")
+    print("generating", name+"_crc"+ext, "...")
 
     while buf := image_file.read(32768):
         crc = subprocess.check_output(["./crc16"], input=buf)
