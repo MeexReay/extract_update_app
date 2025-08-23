@@ -1,0 +1,6 @@
+1. First 8 bytes are magic: 41 6f dc 1e 18 00 00 00
+2. Then 4 bytes for Source File Size
+3. Then 4 bytes are zeros
+4. Then 4 bytes for Unknown
+5. Then 4 bytes for CRC file size ceil(file_size / 65536) * 4 + 24
+6. Then ceil(file_size / 65536) * 4 bytes for crc32c of each 65536 file block
