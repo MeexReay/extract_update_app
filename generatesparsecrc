@@ -4,25 +4,60 @@ import sys
 import libscrc
 import math
 
-for i in sys.argv[1:]:
-    name,ext = os.path.splitext(i)
-    
-    image_file = open(i,"rb")
-    crc_file = open(name+"_crc32c"+ext,"wb")
+for image_path in sys.argv[1:]:
+    name,ext = os.path.splitext(image_path)
 
-    print("generating", name+"_crc32c"+ext, "...")
+    crc_path = name+"_crc32c"+ext
+    sparse_path = name+"_sparse"+ext
 
-    size = os.path.getsize(i)
+    print("generating", sparse_path, "...", end="\r")
     
-    crc_file.write(b"\x41\x6f\xdc\x1e\x18\x00\x00\x00") # magic
-    crc_file.write((size - 28).to_bytes(4, byteorder="little"))
-    crc_file.write(b"\x00\x00\x00\x00")
-    crc_file.write(b"\xc6\x18\xf3\xe9") # mutable magic, must be known
-    crc_file.write((math.ceil(size / (65536)) * 4 + 24).to_bytes(4, byteorder="little"))
+    os.system("img2simg "+image_path+" "+sparse_path)
+
+    print("generated", sparse_path, "    ")
+
+    image_file = open(image_path,"rb")
+    crc_file = None
+
+    exists = os.path.exists(crc_path)
+
+    if exists:
+        crc_file = open(crc_path,"rb")
+        crc_file.read(24)
+    else:
+        crc_file = open(crc_path,"wb")
+
+    print("generating", crc_path, "...", "0%", end="\r")
+
+    image_size = os.path.getsize(image_path)
+
+    if not exists:
+        crc_file.write(b"\x41\x6f\xdc\x1e\x18\x00\x00\x00") # magic
+        crc_file.write((image_size - 28).to_bytes(4, byteorder="little"))
+        crc_file.write(b"\x00\x00\x00\x00")
+        crc_file.write(b"\xc6\x18\xf3\xe9") # mutable magic, must be known
+        crc_file.write((math.ceil(image_size / (65536)) * 4 + 24).to_bytes(4, byteorder="little"))
+
+    i = 0
 
     while buf := image_file.read(65536):
         buf += b"\x00" * (65536 - len(buf))
-        crc_file.write(libscrc.crc32_c(buf).to_bytes(4, byteorder="little"))
+
+        crc = libscrc.crc32_c(buf).to_bytes(4, byteorder="little")
+
+        if not exists:
+            crc_file.write(crc)
+        else:
+            exists_crc = crc_file.read(65536)
+            if crc != exists_crc:
+                print("\nerror: block", hex(i), "not same", " " * len(crc_path))
+                exit()
+
+        i += 65536
+        
+        print("generating", crc_path, "...", str(min(100, int(i / image_size * 100)))+"%", end="\r")
+
+    print("generated", crc_path, "         ")
 
     crc_file.close()
     image_file.close()

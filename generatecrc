@@ -3,23 +3,40 @@ import sys
 import libscrc
 import os
 
-for i in sys.argv[1:]:
-    name,ext = os.path.splitext(i)
+for image_path in sys.argv[1:]:
+    name,ext = os.path.splitext(image_path)
+
+    crc_path = name+"_crc"+ext
     
-    image_file = open(i,"rb")
-    crc_file = open(name+"_crc"+ext,"wb")
+    image_file = open(image_path,"rb")
 
-    print("generating", name+"_crc"+ext, "...")
+    exists = os.path.exists(crc_path)
+    if exists:
+        crc_file = open(crc_path,"rb")
+    else:
+        crc_file = open(crc_path,"wb")
 
-    while True:
-        buf = image_file.read(32768)
-        print(buf)
-        if not buf:
-            break
-        for i in range(32768 - len(buf)):
-            buf += b"\x00"
+    image_size = os.path.getsize(image_path)
+
+    print("generating", crc_path, "...", "0%", end="\r")
+
+    i = 0
+    while buf := image_file.read(32768):
+        buf += b"\x00" * (32768 - len(buf))
+        
         crc = libscrc.ibm_sdlc(buf).to_bytes(2, "little")
-        crc_file.write(crc)
+        if exists:
+            exists_crc = crc_file.read(32768)
+            if crc != exists_crc:
+                print("\nerror: block", hex(i), "not same", " " * len(crc_path))
+                exit()
+        else:
+            crc_file.write(crc)
+        
+        i += 32758
+        print("generating", crc_path, "...", str(min(100, int(i / image_size * 100)))+"%", end="\r")
+        
+    print("generated", crc_path, "         ")
 
     crc_file.close()
     image_file.close()
