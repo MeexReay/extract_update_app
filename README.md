@@ -10,6 +10,8 @@ To extract execute:
 
 The img files will be extracted in the output/ folder.
 
+Dependencies for CRC scripts: python3-crc32c, python3-libscrc
+
 To split crc.img for huawei_crc_check:
 
 ```

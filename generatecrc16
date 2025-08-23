@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import subprocess
 import sys
+import libscrc
+import os
 
 for i in sys.argv[1:]:
     name,ext = os.path.splitext(i)
@@ -10,10 +11,14 @@ for i in sys.argv[1:]:
 
     print("generating", name+"_crc"+ext, "...")
 
-    while buf := image_file.read(32768):
-        buf += b"\x00" * (32768 - len(buf))
-        crc = subprocess.check_output(["./crc16"], input=buf)
-        crc = bytes.fromhex(crc.decode())
+    while True:
+        buf = image_file.read(32768)
+        print(buf)
+        if not buf:
+            break
+        for i in range(32768 - len(buf)):
+            buf += b"\x00"
+        crc = libscrc.ibm_sdlc(buf).to_bytes(2, "little")
         crc_file.write(crc)
 
     crc_file.close()

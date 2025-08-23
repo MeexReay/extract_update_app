@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-
-import sys
-import subprocess
-
-data = sys.stdin.read().encode()
-output = subprocess.check_output(["rsbkb", "crc16"], input=data).decode()
-
-print(output[2:4]+output[0:2], end="")

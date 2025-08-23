@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import math
-import subprocess
+import libscrc
 
 OUTPUT_DIR = "output"
 
@@ -36,8 +36,7 @@ while len(read_images) != len(images):
         file = open(path, "rb")
         buf = file.read(32768)
         file.close()
-        crc = subprocess.check_output(["./crc16"], input=buf)
-        crc = bytes.fromhex(crc.decode())
+        crc = libscrc.ibm_sdlc(buf).to_bytes("little", 2)
         if crc == first_crc:
             image = name
             break
