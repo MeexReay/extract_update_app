@@ -13,7 +13,6 @@ for i in sys.argv[1:]:
     while buf := image_file.read(32768):
         crc = subprocess.check_output(["./crc16"], input=buf)
         crc = bytes.fromhex(crc.decode())
-        crc = bytes([crc[1], crc[0]])
         crc_file.write(crc)
 
     crc_file.close()

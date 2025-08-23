@@ -13,20 +13,8 @@ while line := struct_file.readline():
     (pos, name) = line.split()
     pos = int(pos, 16)
     
-    if name == "sha256rsa":
+    if name in ["sha256rsa", "crc"]: # verlist, curver, package_type are included to crc
         continue
-            
-    if name == "crc":
-        continue
-
-    # if name == "verlist":
-    #     continue
-
-    # if name == "curver":
-    #     continue
-
-    # if name == "package_type":
-    #     continue
 
     images += [name]
 
@@ -50,7 +38,7 @@ while len(read_images) != len(images):
         file.close()
         crc = subprocess.check_output(["./crc16"], input=buf)
         crc = bytes.fromhex(crc.decode())
-        if crc[0] == first_crc[1] and crc[1] == first_crc[0]:
+        if crc == first_crc:
             image = name
             break
 
