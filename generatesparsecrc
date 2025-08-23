@@ -11,10 +11,21 @@ if only_existing:
 for image_path in sys.argv[1:]:
     name,ext = os.path.splitext(image_path)
 
+    if name.endswith("_crc"):
+        continue
     if name.endswith("_crc32c"):
         continue
     if name.endswith("_sparse"):
-        continue
+        sparse_path = image_path
+        name = name[:-7]
+        image_path = name+ext
+        
+        if not os.path.exists(image_path):
+            print("generating", image_path, "...", end="\r")
+            os.system("simg2img "+sparse_path+" "+image_path)
+            print("generated", image_path, "    ")
+        else:
+            continue
 
     crc_path = name+"_crc32c"+ext
     sparse_path = name+"_sparse"+ext

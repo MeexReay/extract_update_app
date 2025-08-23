@@ -12,6 +12,10 @@ for image_path in sys.argv[1:]:
 
     if name.endswith("_crc"):
         continue
+    if name.endswith("_sparse"):
+        continue
+    if name.endswith("_crc32c"):
+        continue
 
     crc_path = name+"_crc"+ext
     
