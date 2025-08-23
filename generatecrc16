@@ -11,6 +11,7 @@ for i in sys.argv[1:]:
     print("generating", name+"_crc"+ext, "...")
 
     while buf := image_file.read(32768):
+        buf += b"\x00" * (32768 - len(buf))
         crc = subprocess.check_output(["./crc16"], input=buf)
         crc = bytes.fromhex(crc.decode())
         crc_file.write(crc)

@@ -22,6 +22,7 @@ for i in sys.argv[1:]:
     crc_file.write((math.ceil(size / (65536)) * 4 + 24).to_bytes(4, byteorder="little"))
 
     while buf := image_file.read(65536):
+        buf += b"\x00" * (65536 - len(buf))
         crc_file.write(crc32c.crc32c(buf).to_bytes(4, byteorder="little"))
 
     crc_file.close()
