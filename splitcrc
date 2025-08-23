@@ -36,7 +36,7 @@ while len(read_images) != len(images):
         file = open(path, "rb")
         buf = file.read(32768)
         file.close()
-        crc = libscrc.ibm_sdlc(buf).to_bytes("little", 2)
+        crc = libscrc.ibm_sdlc(buf).to_bytes(2, "little")
         if crc == first_crc:
             image = name
             break

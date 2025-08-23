@@ -3,8 +3,15 @@ import sys
 import libscrc
 import os
 
+only_existing = "--only-existing" in sys.argv
+if only_existing:
+    sys.argv.remove("--only-existing")
+
 for image_path in sys.argv[1:]:
     name,ext = os.path.splitext(image_path)
+
+    if name.endswith("_crc"):
+        continue
 
     crc_path = name+"_crc"+ext
     
@@ -14,6 +21,9 @@ for image_path in sys.argv[1:]:
     if exists:
         crc_file = open(crc_path,"rb")
     else:
+        if only_existing:
+            print("skip", crc_path)
+            continue
         crc_file = open(crc_path,"wb")
 
     image_size = os.path.getsize(image_path)
@@ -22,14 +32,14 @@ for image_path in sys.argv[1:]:
 
     i = 0
     while buf := image_file.read(32768):
-        buf += b"\x00" * (32768 - len(buf))
+        # buf += b"\x00" * (32768 - len(buf))
         
         crc = libscrc.ibm_sdlc(buf).to_bytes(2, "little")
         if exists:
-            exists_crc = crc_file.read(32768)
+            exists_crc = crc_file.read(2)
             if crc != exists_crc:
                 print("\nerror: block", hex(i), "not same", " " * len(crc_path))
-                exit()
+                break
         else:
             crc_file.write(crc)
         

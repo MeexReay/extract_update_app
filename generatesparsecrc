@@ -4,8 +4,17 @@ import sys
 import libscrc
 import math
 
+only_existing = "--only-existing" in sys.argv
+if only_existing:
+    sys.argv.remove("--only-existing")
+
 for image_path in sys.argv[1:]:
     name,ext = os.path.splitext(image_path)
+
+    if name.endswith("_crc32c"):
+        continue
+    if name.endswith("_sparse"):
+        continue
 
     crc_path = name+"_crc32c"+ext
     sparse_path = name+"_sparse"+ext
@@ -25,6 +34,9 @@ for image_path in sys.argv[1:]:
         crc_file = open(crc_path,"rb")
         crc_file.read(24)
     else:
+        if only_existing:
+            print("skip", crc_path)
+            continue
         crc_file = open(crc_path,"wb")
 
     print("generating", crc_path, "...", "0%", end="\r")
@@ -48,10 +60,10 @@ for image_path in sys.argv[1:]:
         if not exists:
             crc_file.write(crc)
         else:
-            exists_crc = crc_file.read(65536)
+            exists_crc = crc_file.read(4)
             if crc != exists_crc:
                 print("\nerror: block", hex(i), "not same", " " * len(crc_path))
-                exit()
+                break
 
         i += 65536
         
